@@ -1,34 +1,30 @@
 import { Response, Request, NextFunction } from "express";
 import Jwt from "jsonwebtoken";
+import { UnauthenticatedError } from "../errors/index";
+
 export const authenticationMiddleware = async (
-  req: Request,
+  req: Request | any,
   res: Response,
   next: NextFunction
 ) => {
   const authHeader = req.headers.authorization;
 
-  console.log(authHeader);
-
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    res.status(401).json({
-      msg: "please provide token",
-    });
-    return;
+    throw new UnauthenticatedError("Authentication Invalid");
   }
 
   const token = authHeader.split(" ")[1];
 
-  if (token == "null") {
-    res.status(401).json({
-      msg: "please provide token",
-    });
-    return;
-  }
+  // if (token == "null") {
+  //   throw new UnauthenticatedError("Authentication Invalid");
+  // }
 
   try {
     const decoded: any = Jwt.verify(token, process.env.JWT_SECRET as string);
+    (req as any).user = { userId: decoded.userId, username: decoded.name };
 
-    (req as any).user = { id: decoded.id, username: decoded.username };
     next();
-  } catch (error) {}
+  } catch (error) {
+    throw new UnauthenticatedError("Authentication Invalid");
+  }
 };

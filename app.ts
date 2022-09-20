@@ -6,7 +6,8 @@ import notFound from "./middleware/not-found";
 import errorHandlerMiddleware from "./middleware/error-handler";
 require("express-async-errors");
 import authRouter from "./routes/authRoute";
-import jobsRouter from "./routes/authRoute";
+import jobsRouter from "./routes/jobRoute";
+import { authenticationMiddleware } from "./middleware/auth";
 
 const app = express();
 
@@ -28,7 +29,7 @@ if (process.env.NODE_ENV === "development") {
 }
 
 app.use("/api/v1/auth", authRouter);
-app.use("/api/v1/jobs", jobsRouter);
+app.use("/api/v1/jobs", authenticationMiddleware, jobsRouter);
 
 // error-handler
 app.use(notFound);
